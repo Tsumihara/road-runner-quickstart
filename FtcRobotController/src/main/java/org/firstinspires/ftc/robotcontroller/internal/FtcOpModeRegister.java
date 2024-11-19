@@ -33,6 +33,7 @@ package org.firstinspires.ftc.robotcontroller.internal;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /**
  * {@link FtcOpModeRegister} is responsible for registering OpModes for use in an FTC game.
@@ -60,7 +61,6 @@ public class FtcOpModeRegister implements OpModeRegister {
      * @see com.qualcomm.robotcore.eventloop.opmode.Autonomous
      */
     public void register(OpModeManager manager) {
-
         /**
          * Any manual OpMode class registrations should go here.
          */
