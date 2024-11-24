@@ -32,8 +32,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -73,7 +74,14 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
     private DcMotor linearSlide = null;
-    private DcMotor armJoint = null;
+    private DcMotor armMotor = null;
+    private Servo   claw = null;
+
+    // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
+    public static final double MID_SERVO       =  0.5 ;
+    public static final double CLAW_SPEED      =  0.02 ;  // sets rate to move servo
+    public static final double ARM_UP_POWER    =  0.45 ;
+    public static final double ARM_DOWN_POWER  = -0.45 ;
 
     @Override
     public void runOpMode() {
@@ -85,7 +93,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         linearSlide = hardwareMap.get(DcMotor.class, "linear_slide");
-        armJoint = hardwareMap.get(DcMotor.class, "arm");
+        armMotor = hardwareMap.get(DcMotor.class, "arm");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -102,7 +110,15 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         linearSlide.setDirection(DcMotor.Direction.FORWARD);
-        armJoint.setDirection(DcMotor.Direction.FORWARD);
+        armMotor.setDirection(DcMotor.Direction.FORWARD);
+
+        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
+        // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // Define and initialize ALL installed servos.
+        claw = hardwareMap.get(Servo.class, "claw");
+        claw.setPosition(MID_SERVO);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -126,8 +142,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightFrontPower  = axial - lateral - yaw;
             double leftBackPower    = axial - lateral + yaw;
             double rightBackPower   = axial + lateral - yaw;
-            double armPower         = 0;
             double linearSlidePower = 0;
+            double armPower         = 0;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -140,7 +156,6 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
                 rightFrontPower  /= max;
                 leftBackPower    /= max;
                 rightBackPower   /= max;
-                linearSlidePower /= max;
             }
 
             // This is test code:
@@ -153,9 +168,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             //      the setDirection() calls above.
             // Once the correct motors move in the correct direction re-comment this code.
 
-
-            linearSlidePower   = gamepad1.a ? -1.0 : gamepad1.x ? 1.0 : 0.0;  // A Down, X Up
-            armPower   = gamepad1.b ? -1.0 : gamepad1.y ? 1.0 : 0.0;  // B Down, Y Up
+            linearSlidePower = gamepad1.x ? 1.0 : gamepad1.a ? -1.0 : 0.0;  // A Down, X Up
+            armPower = gamepad1.b ? -1.0 : gamepad1.y ? 1.0 : 0.0;          // B Down, Y Up
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
@@ -163,13 +177,14 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
             linearSlide.setPower(linearSlidePower);
-            armJoint.setPower(armPower);
+            armMotor.setPower(armPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("Linear slide", "%4.2f", linearSlidePower);
+            telemetry.addData("Arm", "%4.2f", armPower);
             telemetry.update();
         }
     }}
