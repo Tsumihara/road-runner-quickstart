@@ -120,8 +120,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
         bucket = hardwareMap.get(Servo.class, "bucket");
-        //claw.setPosition(0.5);
-        //bucket.setPosition(0.5);
+        claw.setPosition(0.5);
+        bucket.setPosition(0.5);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
