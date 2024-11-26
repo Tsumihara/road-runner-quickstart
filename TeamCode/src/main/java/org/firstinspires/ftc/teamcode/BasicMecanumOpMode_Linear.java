@@ -79,7 +79,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     private Servo   bucket = null;
 
     // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
-    public static final double MID_SERVO       =  0.5 ;
+    public static final double MID_SERVO       =  1 ;
+    public static final double MID_CLAW       =  0.5 ;
     public static final double CLAW_SPEED      =  0.02 ;  // sets rate to move servo
     public static final double BUCKET_SPEED    =  0.02 ;  // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.45 ;
@@ -121,7 +122,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
         bucket = hardwareMap.get(Servo.class, "bucket");
-        //claw.setPosition(MID_SERVO);
+        claw.setPosition(MID_CLAW);
         bucket.setPosition(MID_SERVO);
 
         // Wait for the game to start (driver presses START)
