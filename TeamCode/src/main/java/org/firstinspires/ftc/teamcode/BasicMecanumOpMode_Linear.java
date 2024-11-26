@@ -76,10 +76,12 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     private DcMotor linearSlide = null;
     private DcMotor armMotor = null;
     private Servo   claw = null;
+    private Servo   bucket = null;
 
     // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
     public static final double MID_SERVO       =  0.5 ;
     public static final double CLAW_SPEED      =  0.02 ;  // sets rate to move servo
+    public static final double BUCKET_SPEED    =  0.02 ;  // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.45 ;
     public static final double ARM_DOWN_POWER  = -0.45 ;
 
@@ -118,7 +120,9 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
+        bucket = hardwareMap.get(Servo.class, "bucket");
         claw.setPosition(MID_SERVO);
+        bucket.setPosition(MID_SERVO);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -169,7 +173,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             // Once the correct motors move in the correct direction re-comment this code.
 
             linearSlidePower = gamepad1.x ? 1.0 : gamepad1.a ? -1.0 : 0.0;  // A Down, X Up
-            armPower = gamepad1.b ? -1.0 : gamepad1.y ? 1.0 : 0.0;          // B Down, Y Up
+            armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
