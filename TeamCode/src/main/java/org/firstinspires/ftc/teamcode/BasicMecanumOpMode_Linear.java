@@ -143,10 +143,10 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightFrontPower  = axial - lateral - yaw;
             double leftBackPower    = axial - lateral + yaw;
             double rightBackPower   = axial + lateral - yaw;
-            double linearSlidePower = 0;
-            double armPower         = 0;
-            double clawPos = 0;
-            double bucketPos = 0;
+            double linearSlidePower;
+            double armPower;
+            double clawPos;
+            double bucketPos;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -173,8 +173,10 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
             linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
-            clawPos = gamepad1.right_trigger > 0 ? 1 : 0.5;
-            bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
+            clawPos = gamepad1.right_trigger;
+            bucketPos = 0.5;
+            //clawPos = gamepad1.right_trigger > 0 ? 1 : 0.5;
+            //bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
