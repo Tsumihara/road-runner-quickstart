@@ -173,10 +173,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
             linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
-            clawPos = -gamepad1.right_trigger;
-            bucketPos = 0.5;
-            //clawPos = gamepad1.right_trigger > 0 ? 1 : 0.5;
-            //bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
+            clawPos = gamepad1.right_trigger > 0 ? 1 : 0.5;
+            bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
