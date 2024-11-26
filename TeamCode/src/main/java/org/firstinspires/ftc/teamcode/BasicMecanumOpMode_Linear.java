@@ -97,6 +97,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         linearSlide = hardwareMap.get(DcMotor.class, "linear_slide");
         armMotor = hardwareMap.get(DcMotor.class, "arm");
 
+
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
@@ -107,9 +108,9 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         linearSlide.setDirection(DcMotor.Direction.FORWARD);
         armMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -136,9 +137,9 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   =  gamepad1.left_stick_y;
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+            double axial   =  gamepad1.right_stick_y;
+            double lateral =  -gamepad1.right_stick_x;
+            double yaw     =  -gamepad1.left_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -172,7 +173,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             //      the setDirection() calls above.
             // Once the correct motors move in the correct direction re-comment this code.
 
-            linearSlidePower = gamepad1.x ? 1.0 : gamepad1.a ? -1.0 : 0.0;  // A Down, X Up
+            linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
 
             // Send calculated power to wheels
