@@ -85,6 +85,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     public static final double ARM_UP_POWER    =  0.45 ;
     public static final double ARM_DOWN_POWER  = -0.45 ;
 
+
     @Override
     public void runOpMode() {
 
@@ -149,7 +150,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightBackPower   = axial + lateral - yaw;
             double linearSlidePower = 0;
             double armPower         = 0;
-
+            double bucketPos = 0;
+            double clawPos = 0;
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
             max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
@@ -175,6 +177,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
             linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
+            bucketPos = gamepad1.left_trigger > 0? 0 : 1;
+            clawPos = gamepad1.right_trigger > 0? 0 : 1;
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
@@ -183,6 +187,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             linearSlide.setPower(linearSlidePower);
             armMotor.setPower(armPower);
+            bucket.setPosition((bucketPos));
+            claw.setPosition(clawPos);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
