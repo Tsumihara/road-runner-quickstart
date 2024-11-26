@@ -120,8 +120,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
         bucket = hardwareMap.get(Servo.class, "bucket");
-        claw.setPosition(1);
-        bucket.setPosition(0.5);
+        //claw.setPosition(0.5);
+        //bucket.setPosition(0.5);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -147,8 +147,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightBackPower   = axial + lateral - yaw;
             double linearSlidePower = 0;
             double armPower         = 0;
-            double clawPos = 0;
-            double bucketPos = 0;
+            //double clawPos = 0;
+            //double bucketPos = 0;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -175,8 +175,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
             linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
-            clawPos = gamepad1.right_trigger > 0 ? 0 : 1;
-            bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
+            //clawPos = gamepad1.right_trigger > 0 ? 1 : 0;
+            //bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
@@ -185,8 +185,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             linearSlide.setPower(linearSlidePower);
             armMotor.setPower(armPower);
-            claw.setPosition(clawPos);
-            bucket.setPosition(bucketPos);
+            //claw.setPosition(clawPos);
+            //bucket.setPosition(bucketPos);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -194,8 +194,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("Linear slide", "%4.2f", linearSlidePower);
             telemetry.addData("Arm", "%4.2f", armPower);
-            telemetry.addData("Claw", "%4.2f", clawPos);
-            telemetry.addData("Bucket", "%4.2f", bucketPos);
+            //telemetry.addData("Claw", "%4.2f", clawPos);
+            //telemetry.addData("Bucket", "%4.2f", bucketPos);
             telemetry.update();
         }
     }}
