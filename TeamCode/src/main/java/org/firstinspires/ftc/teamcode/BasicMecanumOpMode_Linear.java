@@ -89,24 +89,16 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        leftFrontDrive  = hardwareMap.get(DcMotor.class, "leftFront");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBack");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFront");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "rightBack");
         linearSlide = hardwareMap.get(DcMotor.class, "linear_slide");
         armMotor = hardwareMap.get(DcMotor.class, "arm");
+        int targetPosition = 0;
+        //
 
-        // ########################################################################################
-        // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
-        // ########################################################################################
-        // Most robots need the motors on one side to be reversed to drive forward.
-        // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
-        // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
-        // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
-        // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
-        // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
-        // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD); // FORWARD directions technically not necessary
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -114,9 +106,12 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         armMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        linearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        linearSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
         bucket = hardwareMap.get(Servo.class, "bucket");
@@ -143,10 +138,10 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightFrontPower  = axial - lateral - yaw;
             double leftBackPower    = axial - lateral + yaw;
             double rightBackPower   = axial + lateral - yaw;
-            double linearSlidePower;
             double armPower;
             double clawPos;
             double bucketPos;
+
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -171,7 +166,8 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             //      the setDirection() calls above.
             // Once the correct motors move in the correct direction re-comment this code.
 
-            linearSlidePower = gamepad1.dpad_up ? 1.0 : gamepad1.dpad_down ? -1.0 : 0.11;  // A Down, X Up
+
+
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
             clawPos = gamepad1.right_trigger > 0 ? 1 : 0.1;
             bucketPos = gamepad1.left_trigger > 0 ? 0.2 : 0.5;
@@ -181,7 +177,17 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
-            linearSlide.setPower(linearSlidePower);
+            linearSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            if (gamepad1.dpad_up)
+                targetPosition = 4100;
+            else if (gamepad1.dpad_down)
+                targetPosition = 0;
+            linearSlide.setTargetPosition(targetPosition);
+            if (linearSlide.getCurrentPosition()<= 4200)
+            {linearSlide.setPower(1.0);}
+            else {linearSlide.setPower(0);}
+
             armMotor.setPower(armPower);
             claw.setPosition(clawPos);
             bucket.setPosition(bucketPos);
@@ -190,10 +196,12 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.addData("Linear slide", "%4.2f", linearSlidePower);
+            telemetry.addData("Targeted LinearSlide Pos:", targetPosition);
             telemetry.addData("Arm", "%4.2f", armPower);
             telemetry.addData("Claw", "%4.2f", clawPos);
             telemetry.addData("Bucket", "%4.2f", bucketPos);
+            telemetry.addData("CurrentSlidePos", linearSlide.getCurrentPosition());
+            telemetry.addData("slidePower",linearSlide.getPower());
             telemetry.update();
         }
     }}
