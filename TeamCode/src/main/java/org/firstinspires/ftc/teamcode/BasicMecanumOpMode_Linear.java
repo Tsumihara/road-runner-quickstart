@@ -110,7 +110,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        linearSlide.setDirection(DcMotor.Direction.FORWARD);
+        linearSlide.setDirection(DcMotor.Direction.REVERSE);
         armMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
@@ -171,10 +171,10 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             //      the setDirection() calls above.
             // Once the correct motors move in the correct direction re-comment this code.
 
-            linearSlidePower = gamepad1.a ? 1.0 : gamepad1.x ? -1.0 : 0.0;  // A Down, X Up
+            linearSlidePower = gamepad1.dpad_up ? 1.0 : gamepad1.dpad_down ? -1.0 : 0.11;  // A Down, X Up
             armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
             clawPos = gamepad1.right_trigger > 0 ? 1 : 0.1;
-            bucketPos = gamepad1.left_trigger > 0 ? 0 : 0.5;
+            bucketPos = gamepad1.left_trigger > 0 ? 0.2 : 0.5;
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
