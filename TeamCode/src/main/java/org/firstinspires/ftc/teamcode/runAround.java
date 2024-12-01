@@ -40,12 +40,12 @@ public class runAround extends LinearOpMode {
         //
         initGyro();
         //
-        frontleft = hardwareMap.dcMotor.get("frontleft");
-        frontright = hardwareMap.dcMotor.get("frontright");
-        backleft = hardwareMap.dcMotor.get("backleft");
-        backright = hardwareMap.dcMotor.get("backright");
+        frontleft = hardwareMap.dcMotor.get("leftFront");
+        frontright = hardwareMap.dcMotor.get("rightFront");
+        backleft = hardwareMap.dcMotor.get("leftBack");
+        backright = hardwareMap.dcMotor.get("rightBack");
 
-        frontright.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontleft.setDirection(DcMotorSimple.Direction.REVERSE);
         backright.setDirection(DcMotorSimple.Direction.REVERSE);
         //
         waitForStartify();

@@ -23,10 +23,10 @@ public class Calibrate extends LinearOpMode {
     //
     public void runOpMode() {
         //
-        frontleft = hardwareMap.dcMotor.get("frontleft");
-        frontright = hardwareMap.dcMotor.get("frontright");
-        backleft = hardwareMap.dcMotor.get("backleft");
-        backright = hardwareMap.dcMotor.get("backright");
+        frontleft = hardwareMap.dcMotor.get("leftFront");
+        frontright = hardwareMap.dcMotor.get("rightFront");
+        backleft = hardwareMap.dcMotor.get("leftBack");
+        backright = hardwareMap.dcMotor.get("rightBack");
         frontleft.setDirection(DcMotorSimple.Direction.REVERSE);//If your robot goes backward, switch this from right to left
         backright.setDirection(DcMotorSimple.Direction.REVERSE);//If your robot goes backward, switch this from right to left
         //
