@@ -115,6 +115,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
         bucket = hardwareMap.get(Servo.class, "bucket");
+        bucket.setDirection(Servo.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -177,13 +178,13 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
+            linearSlide.setTargetPosition(targetPosition);
             linearSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             if (gamepad1.dpad_up)
                 targetPosition = 4100;
             else if (gamepad1.dpad_down)
                 targetPosition = 0;
-            linearSlide.setTargetPosition(targetPosition);
             if (linearSlide.getCurrentPosition()<= 4200)
             {linearSlide.setPower(1.0);}
             else {linearSlide.setPower(0);}
