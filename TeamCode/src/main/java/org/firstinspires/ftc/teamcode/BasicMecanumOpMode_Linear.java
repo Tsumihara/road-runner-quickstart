@@ -133,7 +133,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         bucket.setDirection(Servo.Direction.FORWARD);
         armExtender.setDirection(CRServo.Direction.FORWARD);
         boolean armDown = false;
-
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
