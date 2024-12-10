@@ -31,10 +31,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -69,6 +69,9 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime slideCoolDown = new ElapsedTime();
+    private ElapsedTime armCoolDown = new ElapsedTime();
+    private ElapsedTime extenderCoolDown = new ElapsedTime();
     private DcMotor leftFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
@@ -77,25 +80,34 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     private DcMotor armMotor = null;
     private Servo   claw = null;
     private Servo   bucket = null;
+    private CRServo armExtender = null;
 
     // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
     public static final double CLAW_SPEED      =  0.02 ;  // sets rate to move servo
     public static final double BUCKET_SPEED    =  0.02 ;  // sets rate to move servo
     public static final double ARM_UP_POWER    =  0.45 ;
     public static final double ARM_DOWN_POWER  = -0.45 ;
+    double clawPos = 0;
+    double extendPower;
+    double bucketPos;
+    double armLengthPos;
+    public static double ArmController(int currentPos, int destinationPos)
+    {
+        return 0.05 + 0.00326764 * (Math.pow(1.01442,(destinationPos - currentPos)));
+    }
 
     @Override
     public void runOpMode() {
-
-        // Initialize the hardware variables. Note that the strings used here must correspond
-        // to the names assigned during the robot configuration step on the DS or RC devices.
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "leftFront");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "leftBack");
+            // Initialize the hardware variables. Note that the strings used here must correspond
+            // to the names assigned during the robot configuration step on the DS or RC devices.
+            leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFront");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "leftBack");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFront");
         rightBackDrive = hardwareMap.get(DcMotor.class, "rightBack");
         linearSlide = hardwareMap.get(DcMotor.class, "linear_slide");
         armMotor = hardwareMap.get(DcMotor.class, "arm");
         int targetPosition = 0;
+        int armTargetPosition = 0;
         //
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD); // FORWARD directions technically not necessary
@@ -111,11 +123,17 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         linearSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         linearSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Define and initialize ALL installed servos.
         claw = hardwareMap.get(Servo.class, "claw");
+        armExtender = hardwareMap.get(CRServo.class, "armExtender");
         bucket = hardwareMap.get(Servo.class, "bucket");
         bucket.setDirection(Servo.Direction.FORWARD);
+        armExtender.setDirection(CRServo.Direction.FORWARD);
+        boolean armDown = false;
+
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -129,19 +147,30 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   =  gamepad1.right_stick_y;
-            double lateral =  -gamepad1.right_stick_x;
-            double yaw     =  -gamepad1.left_stick_x;
+            double axial = gamepad1.right_stick_y;
+            double lateral = -gamepad1.right_stick_x;
+            double yaw = -gamepad1.left_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower   = axial + lateral + yaw;
-            double rightFrontPower  = axial - lateral - yaw;
-            double leftBackPower    = axial - lateral + yaw;
-            double rightBackPower   = axial + lateral - yaw;
-            double armPower;
-            double clawPos;
-            double bucketPos;
+            double leftFrontPower = axial + lateral + yaw;
+            double rightFrontPower = axial - lateral - yaw;
+            double leftBackPower = axial - lateral + yaw;
+            double rightBackPower = axial + lateral - yaw;
+            if (gamepad1.circle)
+            {
+                if (extendPower == 1)
+                {
+                    extendPower = -1;
+                }
+                else if (extendPower == -1)
+                {
+                    extendPower = 0;
+                }
+                else extendPower = 1;
+
+            }
+
 
 
             // Normalize the values so no wheel power exceeds 100%
@@ -151,10 +180,10 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             max = Math.max(max, Math.abs(rightBackPower));
 
             if (max > 1.0) {
-                leftFrontPower   /= max;
-                rightFrontPower  /= max;
-                leftBackPower    /= max;
-                rightBackPower   /= max;
+                leftFrontPower /= max;
+                rightFrontPower /= max;
+                leftBackPower /= max;
+                rightBackPower /= max;
             }
 
             // This is test code:
@@ -168,11 +197,17 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             // Once the correct motors move in the correct direction re-comment this code.
 
 
-
-            armPower = gamepad1.y ? 1.0 : gamepad1.b ? -1.0 : 0.0;          // B Down, Y Up
-            clawPos = gamepad1.right_trigger > 0 ? 1 : 0.1;
+            clawPos = gamepad1.right_trigger > 0 ? .33 : 0.15;
             bucketPos = gamepad1.left_trigger > 0 ? 0.2 : 0.5;
 
+            /*if (gamepad1.dpad_left && extenderCoolDown.milliseconds() > 200)
+            {
+                extendPos = Math.abs(extendPos - 1)  ;
+            extenderCoolDown.reset();}
+            if (gamepad1.cross) {
+                clawPos += .025;
+            }
+            */
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
             rightFrontDrive.setPower(rightFrontPower);
@@ -180,29 +215,82 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             linearSlide.setTargetPosition(targetPosition);
             linearSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armMotor.setTargetPosition(armTargetPosition);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            if (gamepad1.dpad_up)
-                targetPosition = 4100;
-            else if (gamepad1.dpad_down)
-                targetPosition = 0;
-            if (linearSlide.getCurrentPosition()<= 4200)
-            {linearSlide.setPower(1.0);}
-            else {linearSlide.setPower(0);}
+            //armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            armMotor.setPower(armPower);
-            claw.setPosition(clawPos);
-            bucket.setPosition(bucketPos);
+            if (gamepad1.dpad_up && slideCoolDown.milliseconds() > 200)
+                {
+                    if (linearSlide.getCurrentPosition() < 50) {
+                        targetPosition = 4150;
+                        slideCoolDown.reset();
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
-            telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.addData("Targeted LinearSlide Pos:", targetPosition);
-            telemetry.addData("Arm", "%4.2f", armPower);
-            telemetry.addData("Claw", "%4.2f", clawPos);
-            telemetry.addData("Bucket", "%4.2f", bucketPos);
-            telemetry.addData("CurrentSlidePos", linearSlide.getCurrentPosition());
-            telemetry.addData("slidePower",linearSlide.getPower());
-            telemetry.update();
-        }
-    }}
+                    }
+                    if (linearSlide.getCurrentPosition() > 50) {
+                        targetPosition = 0;
+                        slideCoolDown.reset();
+                    }
+                }
+                if (gamepad1.cross) {
+                    clawPos += .025;
+                }
+                if (gamepad1.dpad_down && armCoolDown.milliseconds() > 200)
+                {
+                    if (armMotor.getCurrentPosition() > -140) {
+                        armDown = false;
+                        armMotor.setPower(1.0);
+                        armTargetPosition = -450;
+                        armCoolDown.reset();
+                    }
+                    if (armMotor.getCurrentPosition() < -400) {
+                        armDown = true;
+                        armMotor.setPower(1);
+                        armTargetPosition = -35;
+                        armCoolDown.reset();
+                    }
+                }
+
+                /*
+                if ((-135 < armMotor.getCurrentPosition() && armMotor.getCurrentPosition() < -95) && armDown)
+                {
+                    armMotor.setPower(0.09);
+                    armTargetPosition = -20;
+                    armDown = false;
+                } */
+
+                if (armDown)
+                {
+                    armMotor.setPower(ArmController(armMotor.getCurrentPosition(), -15));
+                }
+                if (armMotor.getCurrentPosition() == armTargetPosition)
+                {
+                    armDown = false;
+                }
+                if (linearSlide.getCurrentPosition() <= 4200) {
+                    linearSlide.setPower(1.0);
+                } else {
+                    linearSlide.setPower(0);
+                }
+
+                claw.setPosition(clawPos);
+                bucket.setPosition(bucketPos);
+                armExtender.setPower(extendPower);
+
+                // Show the elapsed game time and wheel power.
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
+                telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+                telemetry.addData("Targeted LinearSlide Pos:", targetPosition);
+                telemetry.addData("Arm", armTargetPosition);
+                telemetry.addData("Armpower", armMotor.getPower());
+                telemetry.addData("Claw", "%4.2f", claw.getPosition());
+                telemetry.addData("Bucket", "%4.2f", bucketPos);
+                telemetry.addData("CurrentSlidePos", linearSlide.getCurrentPosition());
+                telemetry.addData("slidePower", linearSlide.getPower());
+                telemetry.addData("Current arm Position (ticks)", armMotor.getCurrentPosition());
+                telemetry.addData("Arm CoolDown", armCoolDown.toString());
+                telemetry.addData("Slide CoolDown", slideCoolDown.toString());
+                telemetry.update();
+            }
+        }}
