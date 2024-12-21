@@ -93,7 +93,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
     double armLengthPos;
     public static double ArmController(int currentPos, int destinationPos)
     {
-        return 0.05 + 0.00326764 * (Math.pow(1.01442,(destinationPos - currentPos)));
+        return 0.05 + 0.00326764 * (Math.pow(1.01442, Math.abs(destinationPos - currentPos)));
     }
 
     @Override
@@ -133,7 +133,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
         bucket.setDirection(Servo.Direction.FORWARD);
         armExtender.setDirection(CRServo.Direction.FORWARD);
         boolean armDown = false;
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        boolean armUp = false;
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -157,7 +157,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower = axial - lateral + yaw;
             double rightBackPower = axial + lateral - yaw;
-            if (gamepad1.circle)
+            if (gamepad1.circle && extenderCoolDown.milliseconds() > 200)
             {
                 if (extendPower == 1)
                 {
@@ -168,7 +168,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
                     extendPower = 0;
                 }
                 else extendPower = 1;
-
+                extenderCoolDown.reset();
             }
 
 
@@ -197,7 +197,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             // Once the correct motors move in the correct direction re-comment this code.
 
 
-            clawPos = gamepad1.right_trigger > 0 ? .33 : 0.15;
+            clawPos = gamepad1.right_trigger > 0 ? .15 : .33;
             bucketPos = gamepad1.left_trigger > 0 ? 0.2 : 0.5;
 
             /*if (gamepad1.dpad_left && extenderCoolDown.milliseconds() > 200)
@@ -214,6 +214,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
             linearSlide.setTargetPosition(targetPosition);
+            linearSlide.setPower(1.0);
             linearSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             armMotor.setTargetPosition(armTargetPosition);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -223,7 +224,7 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
             if (gamepad1.dpad_up && slideCoolDown.milliseconds() > 200)
                 {
                     if (linearSlide.getCurrentPosition() < 50) {
-                        targetPosition = 4150;
+                        targetPosition = 4160;
                         slideCoolDown.reset();
 
                     }
@@ -237,16 +238,18 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
                 }
                 if (gamepad1.dpad_down && armCoolDown.milliseconds() > 200)
                 {
-                    if (armMotor.getCurrentPosition() > -140) {
+                    if (armMotor.getCurrentPosition() > 100) {
                         armDown = false;
+                        armUp = true;
                         armMotor.setPower(1.0);
-                        armTargetPosition = -450;
+                        armTargetPosition = 12;
                         armCoolDown.reset();
                     }
-                    if (armMotor.getCurrentPosition() < -400) {
+                    if (armMotor.getCurrentPosition() < 30) {
                         armDown = true;
+                        armUp= false;
                         armMotor.setPower(1);
-                        armTargetPosition = -35;
+                        armTargetPosition = 640;
                         armCoolDown.reset();
                     }
                 }
@@ -261,18 +264,12 @@ public class BasicMecanumOpMode_Linear extends LinearOpMode {
 
                 if (armDown)
                 {
-                    armMotor.setPower(ArmController(armMotor.getCurrentPosition(), -15));
+                    armMotor.setPower(ArmController(armMotor.getCurrentPosition(), armTargetPosition));
                 }
-                if (armMotor.getCurrentPosition() == armTargetPosition)
+                if (armUp)
                 {
-                    armDown = false;
+                    armMotor.setPower((ArmController(armMotor.getCurrentPosition(), armTargetPosition)));
                 }
-                if (linearSlide.getCurrentPosition() <= 4200) {
-                    linearSlide.setPower(1.0);
-                } else {
-                    linearSlide.setPower(0);
-                }
-
                 claw.setPosition(clawPos);
                 bucket.setPosition(bucketPos);
                 armExtender.setPower(extendPower);
